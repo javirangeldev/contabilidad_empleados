@@ -1,31 +1,25 @@
+// server.js
 const express = require('express');
-const mysql = require('mysql');
 const cors = require('cors');
+const PartnerService = require('./services/partner.service');
 
 const app = express();
+const PORT = process.env.PORT || 8081;
+
 app.use(cors());
 
-const db = mysql.createConnection({
-    host: 'localhost',
-    port: '8889', // Puerto de MySQL
-    user: 'root',
-    password: 'root',
-    database: 'cont_empl_db',
-    connectTimeout: 10000 // Tiempo de espera de conexión en milisegundos
+const service = new PartnerService();
+
+app.get('/partners', async (req, res) => {
+    try {
+        const partners = await service.show();
+        res.json(partners);
+    } catch (err) {
+        console.error('Error de red:', err);
+        res.status(500).json({ error: 'Error de servidor' });
+    }
 });
 
-app.get('/', (req, res) => {
-    return res.json('Backend funcionando')
-})
-
-app.get('/users', (req, res) => {
-    const sql = 'SELECT * FROM Empleados';
-    db.query(sql, (err, data) => {
-        if (err) return res.json(err);
-        return res.json(data);
-    })
-})
-
-app.listen(8081, () => {
-    console.log('listening')
-})
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
